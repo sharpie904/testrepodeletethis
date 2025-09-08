@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: backend
+    ports:
+      - "3000:3000"
+    environment:
+      BETTER_AUTH_URL: "http://localhost:3000"
+      DATABASE_URL: "postgresql://playuser:playpass@192.168.1.36:1648/playdb"
+      BETTER_AUTH_SECRET: "supersecretkey"
+      NODE_ENV: "production"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: "production"
+      VITE_API_URL: "http://localhost:3000"
+    restart: unless-stopped
