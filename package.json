@@ -1,0 +1,33 @@
+{
+  "name": "familyfolio",
+  "version": "1.0.0",
+  "description": "Family portfolio management application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "build": "pnpm --filter backend build && pnpm --filter frontend build",
+    "start": "pnpm --filter backend start",
+    "db:generate": "pnpm --filter backend db:generate",
+    "db:push": "pnpm --filter backend db:push",
+    "db:migrate": "pnpm --filter backend db:migrate",
+    "db:studio": "pnpm --filter backend db:studio",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
+  },
+  "keywords": ["family", "portfolio", "management"],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.15.0",
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.34.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0"
+  }
+}
