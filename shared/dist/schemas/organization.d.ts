@@ -1,0 +1,12 @@
+import { z } from 'zod';
+export declare const CreateOrganizationSchema: any;
+export declare const UpdateOrganizationSchema: any;
+export declare const OrganizationSchema: any;
+export declare const MemberSchema: any;
+export declare const OrganizationWithMembersSchema: any;
+export type CreateOrganizationInput = z.infer<typeof CreateOrganizationSchema>;
+export type UpdateOrganizationInput = z.infer<typeof UpdateOrganizationSchema>;
+export type Organization = z.infer<typeof OrganizationSchema>;
+export type Member = z.infer<typeof MemberSchema>;
+export type OrganizationWithMembers = z.infer<typeof OrganizationWithMembersSchema>;
+export type MemberRole = Member['role'];

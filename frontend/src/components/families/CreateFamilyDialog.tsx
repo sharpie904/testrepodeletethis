@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { authClient } from '@/lib/auth';
+import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-client';
 import { generateSlug } from '@/lib/utils';
+import { type CreateOrganizationInput } from 'shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,21 +27,12 @@ export function CreateFamilyDialog({ open, onOpenChange }: CreateFamilyDialogPro
   const queryClient = useQueryClient();
 
   const createFamilyMutation = useMutation({
-    mutationFn: async (data: { name: string; slug: string }) => {
-      const response = await authClient.organization.create(data);
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      return response.data;
-    },
+    mutationFn: (data: CreateOrganizationInput) => api.organizations.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all });
       toast.success('Family created successfully!');
       setFamilyName('');
       onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create family');
     },
   });
 

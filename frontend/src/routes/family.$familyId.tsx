@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-client';
 import { FamilyPage } from '@/components/family/FamilyPage';
 
 export const Route = createFileRoute('/family/$familyId')({
@@ -20,17 +21,17 @@ function FamilyPageComponent() {
   const { familyId } = Route.useParams();
   
   const { data: organization, isLoading: orgLoading } = useQuery({
-    queryKey: ['organization', familyId],
+    queryKey: queryKeys.organizations.detail(familyId),
     queryFn: () => api.organizations.get(familyId),
   });
 
   const { data: familyMembers, isLoading: membersLoading } = useQuery({
-    queryKey: ['familyMembers', familyId],
+    queryKey: queryKeys.familyMembers.list(familyId),
     queryFn: () => api.familyMembers.list(familyId),
   });
 
   const { data: userRole } = useQuery({
-    queryKey: ['userRole', familyId],
+    queryKey: queryKeys.familyMembers.role(familyId),
     queryFn: () => api.familyMembers.getRole(familyId),
   });
 

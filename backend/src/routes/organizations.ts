@@ -2,15 +2,17 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
 import type { AuthType } from "../lib/auth.js";
 import { protectRoute } from "../middleware/auth.js";
+import { handleError, createSuccessResponse, createAppError } from "../lib/errors.js";
+import { validateSchema, CreateOrganizationSchema, UpdateOrganizationSchema, type OrganizationWithMembers } from "shared";
 
 const prisma = new PrismaClient();
 const app = new Hono<{ Variables: AuthType }>();
 
 // Get all organizations for the current user
 app.get("/", protectRoute, async (c) => {
-  const user = c.get("user");
-  
   try {
+    const user = c.get("user");
+    
     const organizations = await prisma.organization.findMany({
       where: {
         Member: {
@@ -28,19 +30,28 @@ app.get("/", protectRoute, async (c) => {
       }
     });
 
-    return c.json(organizations);
+    // Transform dates for JSON serialization
+    const transformedOrgs = organizations.map(org => ({
+      ...org,
+      createdAt: org.createdAt.toISOString(),
+      Member: org.Member.map(member => ({
+        ...member,
+        createdAt: member.createdAt.toISOString(),
+      }))
+    }));
+
+    return c.json(createSuccessResponse(transformedOrgs));
   } catch (error) {
-    console.error("Error fetching organizations:", error);
-    return c.json({ error: "Failed to fetch organizations" }, 500);
+    return handleError(error, c);
   }
 });
 
 // Get organization by ID with full details
 app.get("/:id", protectRoute, async (c) => {
-  const organizationId = c.req.param("id");
-  const user = c.get("user");
-
   try {
+    const organizationId = c.req.param("id");
+    const user = c.get("user");
+
     const organization = await prisma.organization.findFirst({
       where: {
         id: organizationId,
@@ -58,23 +69,92 @@ app.get("/:id", protectRoute, async (c) => {
     });
 
     if (!organization) {
-      return c.json({ error: "Organization not found" }, 404);
+      throw createAppError('NOT_FOUND', 'Organization not found');
     }
 
-    return c.json(organization);
+    // Transform dates for JSON serialization
+    const transformedOrg = {
+      ...organization,
+      createdAt: organization.createdAt.toISOString(),
+      Member: organization.Member.map(member => ({
+        ...member,
+        createdAt: member.createdAt.toISOString(),
+      })),
+      Invitation: organization.Invitation.map(inv => ({
+        ...inv,
+        expiresAt: inv.expiresAt.toISOString(),
+      })),
+      FamilyMember: organization.FamilyMember.map(fm => ({
+        ...fm,
+        createdAt: fm.createdAt.toISOString(),
+        updatedAt: fm.updatedAt.toISOString(),
+      })),
+    };
+
+    return c.json(createSuccessResponse(transformedOrg));
   } catch (error) {
-    console.error("Error fetching organization:", error);
-    return c.json({ error: "Failed to fetch organization" }, 500);
+    return handleError(error, c);
   }
 });
 
-// Update organization name
-app.put("/:id", protectRoute, async (c) => {
-  const organizationId = c.req.param("id");
-  const user = c.get("user");
-  const { name, slug } = await c.req.json();
-
+// Create new organization
+app.post("/", protectRoute, async (c) => {
   try {
+    const user = c.get("user");
+    const body = await c.req.json();
+    
+    const validatedData = validateSchema(CreateOrganizationSchema, body);
+
+    // Check if slug already exists
+    const existingOrg = await prisma.organization.findUnique({
+      where: { slug: validatedData.slug }
+    });
+
+    if (existingOrg) {
+      throw createAppError('ALREADY_EXISTS', 'An organization with this slug already exists');
+    }
+
+    const organization = await prisma.organization.create({
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        Member: {
+          create: {
+            userId: user!.id,
+            email: user!.email,
+            role: 'owner',
+          }
+        }
+      },
+      include: {
+        Member: true,
+      }
+    });
+
+    const transformedOrg = {
+      ...organization,
+      createdAt: organization.createdAt.toISOString(),
+      Member: organization.Member.map(member => ({
+        ...member,
+        createdAt: member.createdAt.toISOString(),
+      }))
+    };
+
+    return c.json(createSuccessResponse(transformedOrg, 'Organization created successfully'));
+  } catch (error) {
+    return handleError(error, c);
+  }
+});
+
+// Update organization
+app.put("/:id", protectRoute, async (c) => {
+  try {
+    const organizationId = c.req.param("id");
+    const user = c.get("user");
+    const body = await c.req.json();
+    
+    const validatedData = validateSchema(UpdateOrganizationSchema, body);
+
     // Check if user has permission to update
     const member = await prisma.member.findFirst({
       where: {
@@ -85,18 +165,43 @@ app.put("/:id", protectRoute, async (c) => {
     });
 
     if (!member) {
-      return c.json({ error: "Insufficient permissions" }, 403);
+      throw createAppError('INSUFFICIENT_PERMISSIONS', 'You do not have permission to update this organization');
+    }
+
+    // Check if new slug already exists (if provided)
+    if (validatedData.slug) {
+      const existingOrg = await prisma.organization.findFirst({
+        where: { 
+          slug: validatedData.slug,
+          id: { not: organizationId }
+        }
+      });
+
+      if (existingOrg) {
+        throw createAppError('ALREADY_EXISTS', 'An organization with this slug already exists');
+      }
     }
 
     const organization = await prisma.organization.update({
       where: { id: organizationId },
-      data: { name, slug }
+      data: validatedData,
+      include: {
+        Member: true,
+      }
     });
 
-    return c.json(organization);
+    const transformedOrg = {
+      ...organization,
+      createdAt: organization.createdAt.toISOString(),
+      Member: organization.Member.map(member => ({
+        ...member,
+        createdAt: member.createdAt.toISOString(),
+      }))
+    };
+
+    return c.json(createSuccessResponse(transformedOrg, 'Organization updated successfully'));
   } catch (error) {
-    console.error("Error updating organization:", error);
-    return c.json({ error: "Failed to update organization" }, 500);
+    return handleError(error, c);
   }
 });
 

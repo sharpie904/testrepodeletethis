@@ -1,5 +1,6 @@
 import type { Context, Next } from "hono";
 import { auth, type AuthType } from "../lib/auth.js";
+import { createAppError } from "../lib/errors.js";
 
 export const authMiddleware = async (
   c: Context<{ Variables: AuthType }>,
@@ -23,13 +24,11 @@ export const protectRoute = async (
 ) => {
   const session = c.get("session");
   if (!session) {
-    return c.json(
-      {
-        error: "Unauthorized",
-        message: "You must be signed in to access this resource",
-      },
-      401,
+    const error = createAppError(
+      'UNAUTHORIZED',
+      'You must be signed in to access this resource'
     );
+    return c.json(error.toJSON(), error.statusCode);
   }
   await next();
 };

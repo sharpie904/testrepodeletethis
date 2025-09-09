@@ -1,7 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from '@/components/providers/ErrorBoundary';
+import { queryClient } from '@/lib/query-client';
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -14,28 +16,14 @@ declare module '@tanstack/react-router' {
 }
 
 function App() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        gcTime: 1000 * 60 * 10, // 10 minutes
-        retry: (failureCount, error: any) => {
-          // Don't retry on 401/403 errors
-          if (error?.status === 401 || error?.status === 403) {
-            return false;
-          }
-          return failureCount < 3;
-        },
-        refetchOnWindowFocus: false,
-      },
-    },
-  });
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <Toaster />
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

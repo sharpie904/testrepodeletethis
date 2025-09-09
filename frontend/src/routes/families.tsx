@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getSession } from '@/lib/auth';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-client';
 import { FamiliesPage } from '@/components/families/FamiliesPage';
 
 export const Route = createFileRoute('/families')({
@@ -18,7 +19,7 @@ export const Route = createFileRoute('/families')({
 
 function FamiliesPageComponent() {
   const { data: organizations, isLoading, error } = useQuery({
-    queryKey: ['organizations'],
+    queryKey: queryKeys.organizations.list(),
     queryFn: api.organizations.list,
   });
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { queryKeys } from '@/lib/query-client';
+import { type CreateFamilyMemberInput } from 'shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,18 +29,15 @@ export function CreateMemberDialog({ open, onOpenChange, organizationId }: Creat
   const queryClient = useQueryClient();
 
   const createMemberMutation = useMutation({
-    mutationFn: (data: { firstName: string; lastName: string; email?: string }) =>
+    mutationFn: (data: CreateFamilyMemberInput) =>
       api.familyMembers.create(organizationId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['familyMembers', organizationId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.familyMembers.list(organizationId) });
       toast.success('Family member added successfully!');
       setFirstName('');
       setLastName('');
       setEmail('');
       onOpenChange(false);
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to add family member');
     },
   });
 

@@ -1,0 +1,11 @@
+import { z } from 'zod';
+export declare const CreateFamilyMemberSchema: any;
+export declare const UpdateFamilyMemberSchema: any;
+export declare const FamilyMemberSchema: any;
+export declare const FamilyMemberInformationSchema: any;
+export declare const FamilyMemberWithInfoSchema: any;
+export type CreateFamilyMemberInput = z.infer<typeof CreateFamilyMemberSchema>;
+export type UpdateFamilyMemberInput = z.infer<typeof UpdateFamilyMemberSchema>;
+export type FamilyMember = z.infer<typeof FamilyMemberSchema>;
+export type FamilyMemberInformation = z.infer<typeof FamilyMemberInformationSchema>;
+export type FamilyMemberWithInfo = z.infer<typeof FamilyMemberWithInfoSchema>;
