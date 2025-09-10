@@ -21,7 +21,6 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "generate": "tsx src/scripts/generate-types.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -29,8 +28,6 @@
   },
   "devDependencies": {
     "@prisma/client": "^6.15.0",
-    "prisma": "^5.21.1",
-    "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }
 }

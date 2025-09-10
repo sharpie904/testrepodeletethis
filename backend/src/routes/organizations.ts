@@ -3,7 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import type { AuthType } from "../lib/auth.js";
 import { protectRoute } from "../middleware/auth.js";
 import { handleError, createSuccessResponse, createAppError } from "../lib/errors.js";
-import { validateSchema, CreateOrganizationSchema, UpdateOrganizationSchema, type OrganizationWithMembers } from "shared";
+import { validateSchema, CreateOrganizationSchema, UpdateOrganizationSchema } from "shared";
+import type { OrganizationWithMembers } from "shared";
 
 const prisma = new PrismaClient();
 const app = new Hono<{ Variables: AuthType }>();

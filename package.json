@@ -7,7 +7,6 @@
     "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "build": "pnpm --filter backend build && pnpm --filter frontend build",
     "build:shared": "pnpm --filter shared build",
-    "generate": "pnpm --filter shared generate && pnpm --filter backend db:generate",
     "start": "pnpm --filter backend start",
     "db:generate": "pnpm --filter backend db:generate",
     "db:push": "pnpm --filter backend db:push",

@@ -2,14 +2,16 @@ import {
   type ApiResponse, 
   type ApiErrorResponse, 
   ErrorCodes,
-  type Organization,
-  type OrganizationWithMembers,
-  type FamilyMember,
-  type CreateOrganizationInput,
-  type UpdateOrganizationInput,
-  type CreateFamilyMemberInput,
-  type UpdateFamilyMemberInput,
-  type MemberRole
+} from 'shared';
+import type {
+  Organization,
+  OrganizationWithMembers,
+  FamilyMember,
+  CreateOrganizationInput,
+  UpdateOrganizationInput,
+  CreateFamilyMemberInput,
+  UpdateFamilyMemberInput,
+  MemberRole
 } from 'shared';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
